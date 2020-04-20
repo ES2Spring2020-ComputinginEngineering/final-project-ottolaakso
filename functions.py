@@ -1,18 +1,18 @@
 """ Final Project Functions """
 """ Otto Laakso """
 
-from alpha_vantage.timeseries import TimeSeries
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-import mplfinance
 import matplotlib.dates as mdates
+import matplotlib.ticker as mticker
+from mpl_finance import candlestick_ochl
+from alpha_vantage.timeseries import TimeSeries
 
-plt.rcParams.update({"font.size":9})
-api_key = "FTOFR6JUG1U8MO6Z"
 symbol = "TSLA"
 interval = "1min"
+api_key = "FTOFR6JUG1U8MO6Z"
+plt.rcParams.update({"font.size":9})
 
 def pullStockData(symbol, interval):
     ts = TimeSeries(key=api_key, output_format="pandas")
@@ -20,31 +20,42 @@ def pullStockData(symbol, interval):
     
     df = data_ts
     df.reset_index(inplace=True)
+    df["date"] = df["date"].map(mdates.date2num)
     
     return df
+
+def movingaverage(values, timeframe):
+    
+    return
 
 def graphData(symbol, interval):
     
     df = pullStockData(symbol, interval)
     
-    fig = plt.figure()
+    x=0
+    y=len(df["date"])
+    candle_array = []
+    while x < y:
+        line = df["date"][x], df["1. open"][x], df["4. close"][x], df["2. high"][x], df["3. low"][x]
+        candle_array.append(line)
+        x+=1
+    
+    #fig = plt.figure()
     ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
-    ax1.plot(df["date"], df["1. open"])
-    ax1.plot(df["date"], df["2. high"])
-    ax1.plot(df["date"], df["3. low"])
-    ax1.plot(df["date"], df["4. close"])
-    ax1.grid(alpha=.4, linestyle="dashed")
+    candlestick_ochl(ax1, candle_array, width=.0003, colorup="g", colordown="r", alpha=1.0)
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
     plt.title(symbol+" Price Action")
+    plt.grid(linestyle="dashed", alpha=.4)
     plt.xlabel("Date")
     plt.ylabel("Price")
     
     ax2 = plt.subplot2grid((5,4 ), (4,0), sharex=ax1, rowspan=1, colspan=4)
     ax2.xaxis.set_major_locator(mticker.MaxNLocator(10))
-    ax2.plot(df["date"], df["5. volume"])
+    ax2.bar(df["date"], df["5. volume"], width=0.0003   )
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
     ax2.axes.yaxis.set_ticklabels([])
+    plt.fill_between(df["date"], df["5. volume"], facecolor = "#00ffe8", alpha=0.35)
     plt.ylabel("Volume")
     plt.xlabel("Time")
     
@@ -53,5 +64,7 @@ def graphData(symbol, interval):
     plt.show()
     
 
-pullStockData(symbol, interval)
+df = pullStockData(symbol, interval)
 graphData(symbol, interval)
+
+#print(type(df["1. open"]))

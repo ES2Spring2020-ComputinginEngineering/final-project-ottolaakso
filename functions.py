@@ -2,6 +2,7 @@
 """ Otto Laakso """
 
 from alpha_vantage.timeseries import TimeSeries
+import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -18,8 +19,8 @@ def pullStockData(symbol, interval):
     data_ts, meta_data_ts = ts.get_intraday(symbol=symbol, interval=interval, outputsize="compact")
     
     df = data_ts
+    df.reset_index(inplace=True)
     print(df)
-    print(df["1. open"][0])
 
     return df
 
@@ -27,14 +28,12 @@ def graphData(symbol, interval):
     
     df = pullStockData(symbol, interval)
     
-    #candelstick(ax1, dochl, width=13fasdfas)
-
     fig = plt.figure()
     ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
-    ax1.plot(df["1. open"])
-    ax1.plot(df["2. high"])
-    ax1.plot(df["3. low"])
-    ax1.plot(df["4. close"])
+    ax1.plot(df["date", "1. open"])
+    ax1.plot(df["date", "2. high"])
+    ax1.plot(df["date", "3. low"])
+    ax1.plot(df["date", "4. close"])
     ax1.grid(alpha=.4, linestyle="dashed")
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(5))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
@@ -45,16 +44,16 @@ def graphData(symbol, interval):
     ax2 = plt.subplot2grid((5,4 ), (4,0), sharex=ax1, rowspan=1, colspan=4)
     ax2.xaxis.set_major_locator(mticker.MaxNLocator(8))
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
-    ax2.plot(df["5. volume"])
+    ax2.plot(df["date", "5. volume"])
     ax2.axes.yaxis.set_ticklabels([])
     plt.ylabel("Volume")
     plt.xlabel("Time")
     
     #plt.setp(ax1.get_xsticklabels(), visible=False)
-    plt.subplots_adjust(left=.09, bottom=.18, right=1, top=.94, wspace=.20, hspace=0)
+    plt.subplots_adjust(left=.09, bottom=.10, right=.94, top=.94, wspace=.20, hspace=0)
     plt.style.use("dark_background")
     plt.show()
     
 
 pullStockData(symbol, interval)
-graphData(symbol, interval)
+#graphData(symbol, interval)

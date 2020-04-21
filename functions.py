@@ -1,6 +1,7 @@
 """ Final Project Functions """
 """ Otto Laakso """
 
+import numpy as np
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ import matplotlib.ticker as mticker
 from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 
-symbol = "TSLA"
+symbol = "AAPL"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 plt.rcParams.update({"font.size":9})
@@ -21,12 +22,27 @@ def pullStockData(symbol, interval):
     df = data_ts
     df.reset_index(inplace=True)
     df["date"] = df["date"].map(mdates.date2num)
+    print(df)
     
     return df
 
-def movingaverage(values, timeframe):
+def movingaverage():
     
-    return
+    values = df["4. close"]
+    window = 20
+    weights = np.repeat(1.0, window)/window
+    sma = np.convolve(values, weights, "valid")
+    
+    return sma
+
+def bollingerBands():
+    
+    sma = movingaverage()
+    standard_deviation = np.std(df["4. close"])
+    upperBand = sma + (standard_deviation * 2)
+    lowerBand = sma - (standard_deviation * 2)
+    
+    return upperBand, lowerBand
 
 def graphData(symbol, interval):
     
@@ -40,13 +56,22 @@ def graphData(symbol, interval):
         candle_array.append(line)
         x+=1
     
+    sma = movingaverage()
+    upperBand, lowerBand = bollingerBands()
+    SP = len(df["date"][19:])
+    
     #fig = plt.figure()
     ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
     candlestick_ochl(ax1, candle_array, width=.0003, colorup="g", colordown="r", alpha=1.0)
+    
+    ax1.plot(df["date"][-SP:], sma[-SP:], linewidth=0.7, color="#00ffe8" , alpha=0.7)
+    #ax1.plot(df["date"][-SP:], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
+    #ax1.plot(df["date"][-SP:], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
+    
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
     plt.title(symbol+" Price Action")
-    plt.grid(linestyle="dashed", alpha=.4)
+    plt.grid(linestyle="dashed", alpha=.3)
     plt.xlabel("Date")
     plt.ylabel("Price")
     
@@ -67,4 +92,17 @@ def graphData(symbol, interval):
 df = pullStockData(symbol, interval)
 graphData(symbol, interval)
 
-#print(type(df["1. open"]))
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

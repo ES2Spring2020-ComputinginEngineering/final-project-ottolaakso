@@ -22,7 +22,6 @@ def pullStockData(symbol, interval):
     df = data_ts
     df.reset_index(inplace=True)
     df["date"] = df["date"].map(mdates.date2num)
-    print(df)
     
     return df
 
@@ -58,15 +57,14 @@ def graphData(symbol, interval):
     
     sma = movingaverage()
     upperBand, lowerBand = bollingerBands()
-    SP = len(df["date"][19:])
+    SP = len(df["date"][:81])
     
-    #fig = plt.figure()
     ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
     candlestick_ochl(ax1, candle_array, width=.0003, colorup="g", colordown="r", alpha=1.0)
     
-    ax1.plot(df["date"][-SP:], sma[-SP:], linewidth=0.7, color="#00ffe8" , alpha=0.7)
-    #ax1.plot(df["date"][-SP:], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
-    #ax1.plot(df["date"][-SP:], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
+    ax1.plot(df["date"][:SP], sma, linewidth=0.7, color="#00ffe8" , alpha=0.7)
+    ax1.plot(df["date"][:SP], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
+    ax1.plot(df["date"][:SP], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
     
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
@@ -92,9 +90,6 @@ def graphData(symbol, interval):
 df = pullStockData(symbol, interval)
 graphData(symbol, interval)
 
-    
-    
-    
     
     
     

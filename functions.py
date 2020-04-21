@@ -62,9 +62,12 @@ def graphData(symbol, interval):
     ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
     candlestick_ochl(ax1, candle_array, width=.0003, colorup="g", colordown="r", alpha=1.0)
     
-    ax1.plot(df["date"][:SP], sma, linewidth=0.7, color="#00ffe8" , alpha=0.7)
-    ax1.plot(df["date"][:SP], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
-    ax1.plot(df["date"][:SP], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=0.7)
+    label_sma = "20-SMA"
+    
+    ax1.plot(df["date"][:SP], sma, linewidth=0.7, color="#00ffe8", label=label_sma, alpha=.7)
+    ax1.plot(df["date"][:SP], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=.9)
+    ax1.plot(df["date"][:SP], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=.7)
+    plt.fill_between(df["date"][:SP], upperBand[-SP:],lowerBand[-SP:],facecolor="#00ffe8", alpha=0.2)
     
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
@@ -72,6 +75,7 @@ def graphData(symbol, interval):
     plt.grid(linestyle="dashed", alpha=.3)
     plt.xlabel("Date")
     plt.ylabel("Price")
+    plt.legend(loc="upper right", fancybox=True)
     
     ax2 = plt.subplot2grid((5,4 ), (4,0), sharex=ax1, rowspan=1, colspan=4)
     ax2.xaxis.set_major_locator(mticker.MaxNLocator(10))

@@ -17,8 +17,10 @@ api_key = "FTOFR6JUG1U8MO6Z"
 plt.rcParams.update({"font.size":9})
 
 def pullStockData(symbol, interval):
+    
     ts = TimeSeries(key=api_key, output_format="pandas")
-    data_ts, meta_data_ts = ts.get_intraday(symbol=symbol, interval=interval, outputsize="compact")
+    data_ts, meta_data_ts = ts.get_intraday(symbol=symbol, interval=interval,
+                                            outputsize="compact")
     
     df = data_ts
     df.reset_index(inplace=True)
@@ -26,16 +28,8 @@ def pullStockData(symbol, interval):
     
     return df
 
-def movingaverage():
-    
-    values = df["4. close"]
-    window = 20
-    weights = np.repeat(1.0, window)/window
-    sma = np.convolve(values, weights, "valid")
-    
-    return sma
-
 def bbands(symbol, interval):
+    
     ti = TechIndicators(key=api_key, output_format="pandas")
     data_ti, meta_data_ti = ti.get_bbands(symbol=symbol, interval=interval,
                                           time_period=20, series_type="close")
@@ -93,8 +87,8 @@ def graphData(symbol, interval):
     
     #Volume Graph:
     ax2 = plt.subplot2grid((6,4), (5,0), sharex=ax1, rowspan=1, colspan=4)
-    ax2.bar(df["date"][:SP], df["5. volume"][:SP], width=0.0003, alpha=0.8)   
-    ax2.fill_between(df["date"][:SP], df["5. volume"][:SP], facecolor = "#00ffe8",alpha=0.4)
+    ax2.bar(df["date"][:SP], df["5. volume"][:SP], width=0.0003, alpha=.8)   
+    ax2.fill_between(df["date"][:SP], df["5. volume"][:SP], facecolor = "#00ffe8",alpha=.4)
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M")) 
     ax2.axes.yaxis.set_ticklabels([])
     plt.xlabel("Time")
@@ -102,8 +96,12 @@ def graphData(symbol, interval):
 
     #RSI Graph:
     ax0 = plt.subplot2grid((6,4), (0,0), sharex=ax1, rowspan=1, colspan=4)
-    ax0.plot(rsi["date"][-SP:], rsi["RSI"][-SP:])
+    ax0.plot(rsi["date"][-SP:], rsi["RSI"][-SP:], color="#00ffe8", alpha=.8)
     plt.setp(ax0.get_xticklabels(), visible=False)
+    ax0.set_ylim(20,80)
+    ax0.set_yticks([30, 70])
+    ax0.axhline(70, color="red", alpha=.8, linestyle="dashed")
+    ax0.axhline(30, color="green", alpha=.8, linestyle="dashed")
     plt.title(symbol + " Price Action")   
     plt.ylabel("RSI")              
   

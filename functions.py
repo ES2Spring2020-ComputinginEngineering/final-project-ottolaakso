@@ -9,6 +9,7 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.techindicators import TechIndicators
 
 symbol = "AAPL"
 interval = "1min"
@@ -34,14 +35,32 @@ def movingaverage():
     
     return sma
 
-def bollingerBands():
+def bbands(symbol, interval):
+    ti = TechIndicators(key=api_key, output_format="pandas")
+    data_ti, meta_data_ti = ti.get_bbands(symbol=symbol, interval=interval,
+                                          time_period=20, series_type="close")
     
-    sma = movingaverage()
-    standard_deviation = np.std(df["4. close"])
-    upperBand = sma + (standard_deviation * 2)
-    lowerBand = sma - (standard_deviation * 2)
+    bbands = data_ti
+    bbands.reset_index(inplace=True)
+    bbands["date"] = bbands["date"].map(mdates.date2num)
     
-    return upperBand, lowerBand
+    lower_band = bbands["Real Lower Band"]
+    middle_band = bbands["Real Middle Band"]
+    upper_band = bbands["Real Upper Band"]
+    
+    return lower_band, middle_band, upper_band
+
+def relativeStrengthIndex(symbol, interval):
+    
+    ti = TechIndicators(key=api_key, output_format="pandas")
+    data_ti, meta_data_ti = ti.get_rsi(symbol=symbol, interval=interval,
+                                       time_period=14, series_type="close")
+    
+    rsi = data_ti
+    rsi.reset_index(inplace=True)
+    rsi["date"] = rsi["date"].map(mdates.date2num)
+  
+    return rsi
 
 def graphData(symbol, interval):
     
@@ -55,37 +74,39 @@ def graphData(symbol, interval):
         candle_array.append(line)
         x+=1
     
-    sma = movingaverage()
-    upperBand, lowerBand = bollingerBands()
     SP = len(df["date"][:81])
+    rsi = relativeStrengthIndex(symbol, interval)
+    lower_band, middle_band, upper_band = bbands(symbol, interval)
     
-    ax1 = plt.subplot2grid((5,4), (0,0), rowspan=4, colspan=4)
-    candlestick_ochl(ax1, candle_array, width=.0003, colorup="g", colordown="r", alpha=1.0)
-    
-    label_sma = "20-SMA"
-    
-    ax1.plot(df["date"][:SP], sma, linewidth=0.7, color="#00ffe8", label=label_sma, alpha=.7)
-    ax1.plot(df["date"][:SP], upperBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=.9)
-    ax1.plot(df["date"][:SP], lowerBand[-SP:], linewidth=0.7, color="#00ffe8", alpha=.7)
-    plt.fill_between(df["date"][:SP], upperBand[-SP:],lowerBand[-SP:],facecolor="#00ffe8", alpha=0.2)
-    
+    #Candlestick & Bollinger Bands Graph:
+    ax1 = plt.subplot2grid((6,4), (1,0), rowspan=4, colspan=4)
+    candlestick_ochl(ax1, candle_array[:SP], width=.0003, colorup="g", colordown="r", alpha=1.0)
+    ax1.plot(df["date"][:SP], middle_band[:SP], linewidth=0.7, color="#00ffe8", alpha=.7)
+    ax1.plot(df["date"][:SP], upper_band[:SP], linewidth=0.7, color="#00ffe8", alpha=.9)
+    ax1.plot(df["date"][:SP], lower_band[:SP], linewidth=0.7, color="#00ffe8", alpha=.7)
+    plt.fill_between(df["date"][:SP], upper_band[:SP],lower_band[:SP],facecolor="#00ffe8", alpha=0.2)
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
-    plt.title(symbol+" Price Action")
     plt.grid(linestyle="dashed", alpha=.3)
-    plt.xlabel("Date")
+    plt.title(symbol+" Price Action")
     plt.ylabel("Price")
-    plt.legend(loc="upper right", fancybox=True)
     
-    ax2 = plt.subplot2grid((5,4 ), (4,0), sharex=ax1, rowspan=1, colspan=4)
-    ax2.xaxis.set_major_locator(mticker.MaxNLocator(10))
-    ax2.bar(df["date"], df["5. volume"], width=0.0003   )
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
+    #Volume Graph:
+    ax2 = plt.subplot2grid((6,4), (5,0), sharex=ax1, rowspan=1, colspan=4)
+    ax2.bar(df["date"][:SP], df["5. volume"][:SP], width=0.0003, alpha=0.8)   
+    ax2.fill_between(df["date"][:SP], df["5. volume"][:SP], facecolor = "#00ffe8",alpha=0.4)
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M")) 
     ax2.axes.yaxis.set_ticklabels([])
-    plt.fill_between(df["date"], df["5. volume"], facecolor = "#00ffe8", alpha=0.35)
-    plt.ylabel("Volume")
     plt.xlabel("Time")
-    
+    plt.ylabel("Volume")
+
+    #RSI Graph:
+    ax0 = plt.subplot2grid((6,4), (0,0), sharex=ax1, rowspan=1, colspan=4)
+    ax0.plot(rsi["date"][-SP:], rsi["RSI"][-SP:])
+    plt.setp(ax0.get_xticklabels(), visible=False)
+    plt.title(symbol + " Price Action")   
+    plt.ylabel("RSI")              
+  
     plt.subplots_adjust(left=.09, bottom=.10, right=.94, top=.94, wspace=.20, hspace=0)
     plt.style.use("dark_background")
     plt.show()
@@ -93,6 +114,11 @@ def graphData(symbol, interval):
 
 df = pullStockData(symbol, interval)
 graphData(symbol, interval)
+
+
+
+
+
 
     
     

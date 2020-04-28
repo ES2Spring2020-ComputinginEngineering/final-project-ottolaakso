@@ -11,7 +11,7 @@ from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 
-symbol = "AAPL"
+symbol = "TSLA"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 plt.rcParams.update({"font.size":9})
@@ -53,7 +53,7 @@ def relativeStrengthIndex(symbol, interval):
     rsi = data_ti
     rsi.reset_index(inplace=True)
     rsi["date"] = rsi["date"].map(mdates.date2num)
-  
+    
     return rsi
 
 def graphData(symbol, interval):
@@ -62,13 +62,14 @@ def graphData(symbol, interval):
     
     x=0
     y=len(df["date"])
-    candle_array = []
+    candle_list = []
     while x < y:
         line = df["date"][x], df["1. open"][x], df["4. close"][x], df["2. high"][x], df["3. low"][x]
-        candle_array.append(line)
+        candle_list.append(line)
         x+=1
     
-    SP = len(df["date"][:81])
+    candle_array = np.array(candle_list)
+    SP = 81
     rsi = relativeStrengthIndex(symbol, interval)
     lower_band, middle_band, upper_band = bbands(symbol, interval)
     
@@ -80,9 +81,8 @@ def graphData(symbol, interval):
     ax1.plot(df["date"][:SP], lower_band[:SP], linewidth=0.7, color="#00ffe8", alpha=.7)
     plt.fill_between(df["date"][:SP], upper_band[:SP],lower_band[:SP],facecolor="#00ffe8", alpha=0.2)
     ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))    
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))   
     plt.grid(linestyle="dashed", alpha=.3)
-    plt.title(symbol+" Price Action")
     plt.ylabel("Price")
     
     #Volume Graph:
@@ -102,23 +102,36 @@ def graphData(symbol, interval):
     ax0.set_yticks([30, 70])
     ax0.axhline(70, color="red", alpha=.8, linestyle="dashed")
     ax0.axhline(30, color="green", alpha=.8, linestyle="dashed")
-    plt.title(symbol + " Price Action")   
+    plt.title(symbol + " Price Action") 
     plt.ylabel("RSI")              
   
+    close_prices = candle_array[:,2]
+    
+    for i in range(len(candle_array[:SP])):
+        
+        if close_prices[i] < lower_band[:SP][i] and rsi["RSI"][-SP:][1544-i] < 30:
+            ax1.axvline(df["date"][:SP][i], color="lime", label="Buy", linestyle="dashed", alpha=1.0)
+            ax1.legend()
+        
+        elif close_prices[i] > upper_band[:SP][i] and rsi["RSI"][1544-i] > 70:
+             ax1.axvline(df["date"][:SP][i], color="red", label="Sell", linestyle="dashed", alpha=1.0)
+             ax1.legend()
+
     plt.subplots_adjust(left=.09, bottom=.10, right=.94, top=.94, wspace=.20, hspace=0)
     plt.style.use("dark_background")
     plt.show()
     
 
 df = pullStockData(symbol, interval)
+
 graphData(symbol, interval)
 
+#relativeStrengthIndex(symbol, interval)
 
 
 
 
 
-    
     
     
     

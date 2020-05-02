@@ -10,7 +10,7 @@ from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 
-symbol = "AAPL"
+symbol = "MSFT"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 
@@ -34,7 +34,7 @@ def pullStockData(symbol, interval):
 def bbands(symbol, interval):
 # Parameters: stock symbol and time interval
 # Calculates three Bollinger Bands for the given stock
-# Returns the lower, upper, and middle band data points
+# Returns the lower, upper, middle band, and standard deviation data points
     
     ti = TechIndicators(key=api_key, output_format="pandas")
     data_ti, meta_data_ti = ti.get_bbands(symbol=symbol, interval=interval,
@@ -47,8 +47,9 @@ def bbands(symbol, interval):
     lower_band = bbands["Real Lower Band"]
     middle_band = bbands["Real Middle Band"]
     upper_band = bbands["Real Upper Band"]
+    sd = middle_band - lower_band
     
-    return lower_band, middle_band, upper_band
+    return lower_band, middle_band, upper_band, sd
 
 def relativeStrengthIndex(symbol, interval):
 # Parameters: stock symbol and time interval
@@ -82,9 +83,9 @@ def candleArray(df):
     
     return candle_array
 
-def tradingAlgorithm(candle_array, upper_band, lower_band, rsi, SP, ax, df):
+def tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df):
 # Parameters: array of candlesticks, upper and lower bollinger bands, RSI values, starting point, and axis
-# Ffor each data point, tests whether a buy or sell signal is created and graphs them
+# Ffor each data point, tests whether a buy or sell signal is created and graphs them with the stop loss level
 # Returns None
     
     rs = len(rsi)
@@ -95,12 +96,18 @@ def tradingAlgorithm(candle_array, upper_band, lower_band, rsi, SP, ax, df):
         if close_prices[i] < lower_band[:SP][i] and rsi["RSI"][-SP:][rs-i] < 30:
             ax.axvline(df["date"][:SP][i], color="lime", label="Buy",
                        linestyle="dashed", alpha=1.0)
+            ax.axhline(close_prices[i]-sd[i], color="red", label="Stop Loss",
+                       linestyle="dashed", alpha=.8)
             ax.legend()
+            break
         
         elif close_prices[i] > upper_band[:SP][i] and rsi["RSI"][rs-i] > 70:
              ax.axvline(df["date"][:SP][i], color="red", label="Sell",
                         linestyle="dashed", alpha=1.0)
+             ax.axhline(close_prices[i]+sd[i], color="red", label="Stop Loss",
+                       linestyle="dashed", alpha=.8)
              ax.legend()
+             break
     return
 
 def graphData(symbol, interval):
@@ -113,7 +120,7 @@ def graphData(symbol, interval):
     df = pullStockData(symbol, interval)
     candle_array = candleArray(df)
     rsi = relativeStrengthIndex(symbol, interval)
-    lower_band, middle_band, upper_band = bbands(symbol, interval)
+    lower_band, middle_band, upper_band, sd = bbands(symbol, interval)
     
     #Candlestick & Bollinger Bands Graph:
     ax1 = plt.subplot2grid((6,4), (1,0), rowspan=4, colspan=4)
@@ -149,7 +156,7 @@ def graphData(symbol, interval):
              
     # Trading Algorithm
     ax = ax1
-    tradingAlgorithm(candle_array, upper_band, lower_band, rsi, SP, ax, df)
+    tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df)
     
     plt.subplots_adjust(left=.09, bottom=.10, right=.94, top=.94, wspace=.20, hspace=0)
     plt.style.use("dark_background")

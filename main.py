@@ -1,15 +1,15 @@
-e"""This is the python file that your instructors will run to test your code
-make sure it runs correctly when someone downloads your repository. You 
-might want to test this on a classmates computer to be sure it works!""
+""" Final Project Driver """
+""" Otto Laakso """
 
-# This files should not contain any function defitions
+import functions as fns
+import matplotlib.pyplot as plt
 
+symbol = "XOM"
+interval = "1min"
+api_key = "FTOFR6JUG1U8MO6Z"
 
-# IMPORT STATEMENTS
+fig = plt.figure()
 
+df = fns.pullStockData(symbol, interval)
 
-
-
-# DEMONSTRATION CODE
-
-
+fns.liveData(symbol, interval, fig)

@@ -2,21 +2,24 @@
 """ Otto Laakso """
 
 import numpy as np
-import pandas as pd
-from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
+import matplotlib.animation as animation
 from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 
-symbol = "TSLA"
+symbol = "AAPL"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
-plt.rcParams.update({"font.size":9})
+
+fig = plt.figure()
 
 def pullStockData(symbol, interval):
+# Parameters: stock symbol and time interval
+# Creates a data frame with open, high, low, close, and date data points
+# Returns the data frame
     
     ts = TimeSeries(key=api_key, output_format="pandas")
     data_ts, meta_data_ts = ts.get_intraday(symbol=symbol, interval=interval,
@@ -29,6 +32,9 @@ def pullStockData(symbol, interval):
     return df
 
 def bbands(symbol, interval):
+# Parameters: stock symbol and time interval
+# Calculates three Bollinger Bands for the given stock
+# Returns the lower, upper, and middle band data points
     
     ti = TechIndicators(key=api_key, output_format="pandas")
     data_ti, meta_data_ti = ti.get_bbands(symbol=symbol, interval=interval,
@@ -45,6 +51,9 @@ def bbands(symbol, interval):
     return lower_band, middle_band, upper_band
 
 def relativeStrengthIndex(symbol, interval):
+# Parameters: stock symbol and time interval
+# Calculates the relative strength index for the given stock
+# Returns a data frame with RSI and time values
     
     ti = TechIndicators(key=api_key, output_format="pandas")
     data_ti, meta_data_ti = ti.get_rsi(symbol=symbol, interval=interval,
@@ -56,9 +65,10 @@ def relativeStrengthIndex(symbol, interval):
     
     return rsi
 
-def graphData(symbol, interval):
-    
-    df = pullStockData(symbol, interval)
+def candleArray(df):
+# Parameters: data frame with open, high, low, close, and date
+# Rearranges the data points into an array suitable for candlestick charting
+# Returns the candlestick array
     
     x=0
     y=len(df["date"])
@@ -69,7 +79,39 @@ def graphData(symbol, interval):
         x+=1
     
     candle_array = np.array(candle_list)
+    
+    return candle_array
+
+def tradingAlgorithm(candle_array, upper_band, lower_band, rsi, SP, ax, df):
+# Parameters: array of candlesticks, upper and lower bollinger bands, RSI values, starting point, and axis
+# Ffor each data point, tests whether a buy or sell signal is created and graphs them
+# Returns None
+    
+    rs = len(rsi)
+    close_prices = candle_array[:,2]
+    
+    for i in range(len(candle_array[:SP])):
+        
+        if close_prices[i] < lower_band[:SP][i] and rsi["RSI"][-SP:][rs-i] < 30:
+            ax.axvline(df["date"][:SP][i], color="lime", label="Buy",
+                       linestyle="dashed", alpha=1.0)
+            ax.legend()
+        
+        elif close_prices[i] > upper_band[:SP][i] and rsi["RSI"][rs-i] > 70:
+             ax.axvline(df["date"][:SP][i], color="red", label="Sell",
+                        linestyle="dashed", alpha=1.0)
+             ax.legend()
+    return
+
+def graphData(symbol, interval):
+# Parameters: stock symbol and time interval
+# Graphs the candlestick chart, volume, RSI, and bollinger bands
+# Graphs "Sell" and "Buy" signals given by the trading algorithm
+# Returns None
+    fig.clf()
     SP = 81
+    df = pullStockData(symbol, interval)
+    candle_array = candleArray(df)
     rsi = relativeStrengthIndex(symbol, interval)
     lower_band, middle_band, upper_band = bbands(symbol, interval)
     
@@ -103,38 +145,32 @@ def graphData(symbol, interval):
     ax0.axhline(70, color="red", alpha=.8, linestyle="dashed")
     ax0.axhline(30, color="green", alpha=.8, linestyle="dashed")
     plt.title(symbol + " Price Action") 
-    plt.ylabel("RSI")              
-  
-    close_prices = candle_array[:,2]
+    plt.ylabel("RSI") 
+             
+    # Trading Algorithm
+    ax = ax1
+    tradingAlgorithm(candle_array, upper_band, lower_band, rsi, SP, ax, df)
     
-    for i in range(len(candle_array[:SP])):
-        
-        if close_prices[i] < lower_band[:SP][i] and rsi["RSI"][-SP:][1544-i] < 30:
-            ax1.axvline(df["date"][:SP][i], color="lime", label="Buy", linestyle="dashed", alpha=1.0)
-            ax1.legend()
-        
-        elif close_prices[i] > upper_band[:SP][i] and rsi["RSI"][1544-i] > 70:
-             ax1.axvline(df["date"][:SP][i], color="red", label="Sell", linestyle="dashed", alpha=1.0)
-             ax1.legend()
-
     plt.subplots_adjust(left=.09, bottom=.10, right=.94, top=.94, wspace=.20, hspace=0)
     plt.style.use("dark_background")
-    plt.show()
+    return
+
+def liveData(symbol, interval, fig):
+# Parameters: stock symbol, time interval, plot figure
+# Runs graphData once every minute
+# Returns None
     
-
-df = pullStockData(symbol, interval)
-
-graphData(symbol, interval)
-
-#relativeStrengthIndex(symbol, interval)
-
-
-
-
-
+    data = graphData(symbol, interval)
+    animation.FuncAnimation(fig, data, interval=2000)
     
-    
-    
+    return
+
+liveData(symbol, interval, fig)
+
+
+
+
+
     
     
     

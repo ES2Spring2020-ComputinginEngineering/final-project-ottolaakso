@@ -10,7 +10,7 @@ from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 
-symbol = "MSFT"
+symbol = "GOOG"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 
@@ -121,7 +121,6 @@ def graphData(symbol, interval):
     candle_array = candleArray(df)
     rsi = relativeStrengthIndex(symbol, interval)
     lower_band, middle_band, upper_band, sd = bbands(symbol, interval)
-    
     #Candlestick & Bollinger Bands Graph:
     ax1 = plt.subplot2grid((6,4), (1,0), rowspan=4, colspan=4)
     candlestick_ochl(ax1, candle_array[:SP], width=.0003, colorup="g", colordown="r", alpha=1.0)
@@ -133,7 +132,6 @@ def graphData(symbol, interval):
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))   
     plt.grid(linestyle="dashed", alpha=.3)
     plt.ylabel("Price")
-    
     #Volume Graph:
     ax2 = plt.subplot2grid((6,4), (5,0), sharex=ax1, rowspan=1, colspan=4)
     ax2.bar(df["date"][:SP], df["5. volume"][:SP], width=0.0003, alpha=.8)   
@@ -142,7 +140,6 @@ def graphData(symbol, interval):
     ax2.axes.yaxis.set_ticklabels([])
     plt.xlabel("Time")
     plt.ylabel("Volume")
-
     #RSI Graph:
     ax0 = plt.subplot2grid((6,4), (0,0), sharex=ax1, rowspan=1, colspan=4)
     ax0.plot(rsi["date"][-SP:], rsi["RSI"][-SP:], color="#00ffe8", alpha=.8)
@@ -153,7 +150,6 @@ def graphData(symbol, interval):
     ax0.axhline(30, color="green", alpha=.8, linestyle="dashed")
     plt.title(symbol + " Price Action") 
     plt.ylabel("RSI") 
-             
     # Trading Algorithm
     ax = ax1
     tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df)
@@ -172,16 +168,4 @@ def liveData(symbol, interval, fig):
     
     return
 
-liveData(symbol, interval, fig)
-
-
-
-
-
-    
-    
-    
-    
-    
-    
-    
+liveData(symbol, interval, fig) 

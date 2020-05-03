@@ -1,39 +1,29 @@
-# This is your Final Project ReadMe Template
+Otto Laakso
+ES2 Final Project
 
-The file is inside your final project repository called "README.md"
+# Coding an Algorithmic Trading Bot
 
-You should include in your final project readme a description of the project, a list of all the files that you have created and instructions for use.
-
-This readme is written in a language called markdown. This is not a programming language but a formatting langauge. There are symbols (syntax) used to indicate how to format the text. For example the pound symbol (i.e. the hashtag) is used to format a title; two of the same symbol format a heading, and three format a sub-heading.
-
-Below is some example text in markdown however this alone is not sufficient for the final project. **Make sure you follow the directions on Canvas.**
-
-Delete the instructions above this line and the line:
-
----------------------------------------------
-
-# Project Title
-
-Short project description here, click the **EDIT (pencil) button** in the top right corner of this frame to copy the markdown formatted template.
+The goal of this project was to design an algorithm that generates "Buy" and "Sell" commands for the user based on the historical price action of the given stock.
 
 ## Instructions
 
-Describe how the users(instructors) should run your code to see an ***easy to run example of the functionality***. This should all be in a *main.py* "driver" script.
+1. Open the file "main.py"
+2. Enter the stock symbol (i.e. symbol="AAPL") and time interval (i.e. interval="1min")
+3. Click on the Spyder menu "python" --> "Preferences" --> "IPython console"
+4. In the IPython console, click "Graphics" and change "Graphics Backend" to "Qt5"
+5. Press OK and run the program twice, closing the pop up window in between the runs.
+6. If the API call frequency is exceeded, wait one minute and run the program again 
+7. Use the interactive toolbar on the pup up window to navigate the graph
 
 ## File List
 
-Create a list of all of the files in your repository with one sentence descriptions 
+- functions.py : Contains all functions needed for the algorithm
+- main.py : Driver file for the algorithmic trading bot, run according to instructions.
+- README.md : File containing helpful information regarding the program
 
-## How to format your readme
+## Features
 
-In your readme, you can:
-```
-Give code examples
-```
-
-You can also include useful links, like this one with information about [formatting markdown](https://help.github.com/en/articles/basic-writing-and-formatting-syntax)
-
-You can 
-- Also
-- Make
-- Lists
+The algorithm:
+- Uses Alpha Vantage for market data
+- Uses Pandas data frames for data processing
+- Uses matplotlib for graphing

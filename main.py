@@ -4,11 +4,11 @@
 import functions as fns
 import matplotlib.pyplot as plt
 
-symbol = "AAPL"
+symbol = "XOM"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 fig = plt.figure()
-
 df = fns.pullStockData(symbol, interval)
 
+#Main Script
 fns.graphData(symbol, interval)

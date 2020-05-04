@@ -5,12 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
-import matplotlib.animation as animation
 from mpl_finance import candlestick_ochl
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 
-symbol = "IBM"
+symbol = "XOM"
 interval = "1min"
 api_key = "FTOFR6JUG1U8MO6Z"
 
@@ -63,7 +62,7 @@ def relativeStrengthIndex(symbol, interval):
     rsi = data_ti
     rsi.reset_index(inplace=True)
     rsi["date"] = rsi["date"].map(mdates.date2num)
-    
+
     return rsi
 
 def candleArray(df):
@@ -88,7 +87,7 @@ def tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df):
 # Ffor each data point, tests whether a buy or sell signal is created and graphs them with the stop loss level
 # Returns None
     
-    rs = len(rsi)
+    rs = len(rsi)-1
     close_prices = candle_array[:,2]
     
     for i in range(len(candle_array[:SP])):
@@ -97,7 +96,7 @@ def tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df):
             ax.axvline(df["date"][:SP][i], color="lime", label="Buy",
                        linestyle="dashed", alpha=1.0)
             ax.axhline(close_prices[i]-sd[i], color="red", label="Stop Loss",
-                       linestyle="dashed", alpha=.8)
+                       alpha=.8)
             ax.legend()
             break
         
@@ -105,7 +104,7 @@ def tradingAlgorithm(candle_array, upper_band, lower_band, sd, rsi, SP, ax, df):
              ax.axvline(df["date"][:SP][i], color="red", label="Sell",
                         linestyle="dashed", alpha=1.0)
              ax.axhline(close_prices[i]+sd[i], color="red", label="Stop Loss",
-                       linestyle="dashed", alpha=.8)
+                        alpha=.8)
              ax.legend()
              break
     return
@@ -130,7 +129,8 @@ def graphData(symbol, interval):
         ax1.plot(df["date"][:SP], lower_band[:SP], linewidth=0.7, color="#00ffe8", alpha=.7)
         plt.fill_between(df["date"][:SP], upper_band[:SP],lower_band[:SP],facecolor="#00ffe8", alpha=0.2)
         ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))   
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H: %M"))
+        plt.setp(ax1.get_xticklabels(), visible=False)
         plt.grid(linestyle="dashed", alpha=.3)
         plt.ylabel("Price")
         #Volume Graph:
@@ -158,9 +158,3 @@ def graphData(symbol, interval):
         plt.style.use("dark_background")
         plt.draw()
         plt.pause(60)
-        
-graphData(symbol, interval)
-    
-    
-    
-    

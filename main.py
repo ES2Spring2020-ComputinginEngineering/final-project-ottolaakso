@@ -11,4 +11,4 @@ fig = plt.figure()
 
 df = fns.pullStockData(symbol, interval)
 
-fns.liveData(symbol, interval, fig)
+fns.graphData(symbol, interval)
